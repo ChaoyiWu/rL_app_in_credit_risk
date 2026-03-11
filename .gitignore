@@ -3,9 +3,9 @@ api/
 CLAUDE.md
 DEBUGGING.md
 
-# Generated data & models (large binary / gitignored by design)
+# Generated data & saved model artifacts (large binary / gitignored by design)
 data/
-models/
+/models/
 htmlcov/
 
 # ── Python ────────────────────────────────────────────────────────────────────
