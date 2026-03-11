@@ -308,6 +308,3 @@ Requires: `pip install stable-baselines3`
 
 ---
 
-## License
-
-MIT License © Capital One Resiliency Intelligence (Simulation)
