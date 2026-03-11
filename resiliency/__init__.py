@@ -1,5 +1,5 @@
 """
-resiliency — Capital One Resiliency Intelligence library.
+resiliency — Credit Risk Business Resiliency Intelligence library.
 
 Modules
 -------

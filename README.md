@@ -1,6 +1,6 @@
 # Credit Resiliency Intelligence
 
-> Capital One — Resiliency Intelligence Team
+> Credit Risk Business — Resiliency Intelligence Team
 > Predicting default risk and recommending optimal debt resolution offers for customers in financial hardship.
 
 ---

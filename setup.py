@@ -4,8 +4,7 @@ from setuptools import setup, find_packages
 setup(
     name="resiliency",
     version="0.1.0",
-    description="Capital One Resiliency Intelligence — credit risk and debt resolution library",
-    author="Resiliency Intelligence Team",
+    description="Resiliency Intelligence — credit risk and debt resolution library",
     packages=find_packages(include=["resiliency", "resiliency.*"]),
     python_requires=">=3.10",
     install_requires=[
