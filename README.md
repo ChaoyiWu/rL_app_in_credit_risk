@@ -34,10 +34,6 @@ The main treatment-learning experiment uses a **LinUCB contextual bandit**.
 
 The contextual-bandit framing is intentionally simple because this prototype models a mostly **single-step treatment decision**. A full reinforcement-learning formulation would be more appropriate if the project modeled repeated customer states and treatment decisions over time.
 
-### 3. Application Layer
-
-A FastAPI layer demonstrates how model scoring and treatment recommendations could be exposed to another application.
-
 ## Simplified Architecture
 
 ```text
@@ -84,8 +80,8 @@ resiliency/
 │   └── generator.py          # synthetic customer data
 ├── models/
 │   ├── classifier.py         # XGBoost default-risk model
-│   ├── linucb.py             # contextual-bandit implementation
-│   └── rl_agent.py           # earlier Q-learning experiment
+│   ├── context.py            # customer context vector
+│   └── linucb.py             # contextual-bandit implementation
 ├── evaluation/
 │   ├── metrics.py            # classification metrics
 │   ├── ips.py                # experimental OPE utilities
@@ -93,12 +89,8 @@ resiliency/
 └── utils/
     └── preprocessing.py
 
-api/
-├── main.py
-└── schemas.py
-
 scripts/
-├── train.py                  # classifier + earlier RL experiment
+├── train.py                  # synthetic data + XGBoost classifier
 ├── train_bandit.py           # LinUCB experiment
 └── generate_data.py
 
@@ -106,7 +98,7 @@ tests/
 notebooks/
 ```
 
-The Q-learning and off-policy-evaluation modules are retained as learning experiments, but **LinUCB is the primary treatment-recommendation approach presented in this project**.
+The primary workflow uses **XGBoost + LinUCB**. Earlier Q-learning code and the original EDA/Q-learning notebook are retained only as legacy experiments for reference and testing.
 
 ## Quick Start
 
@@ -120,19 +112,13 @@ pip install -e .
 ### Generate/train the base models
 
 ```bash
-python scripts/train.py --n-samples 10000 --n-rl-episodes 10000
+python scripts/train.py --n-samples 10000
 ```
 
 ### Train the contextual bandit
 
 ```bash
 python scripts/train_bandit.py
-```
-
-### Start the API
-
-```bash
-uvicorn api.main:app --reload --port 8080
 ```
 
 ### Run tests
@@ -185,3 +171,17 @@ That extension is outside the scope of this prototype.
 The main takeaway from this project is that **risk prediction and treatment optimization are different problems**. A strong predictive model can estimate customer risk, while a contextual bandit provides a framework for learning which action may be most appropriate for different customer contexts.
 
 This repository is intended as a practical learning exercise connecting credit-risk domain knowledge with modern machine-learning decision methods.
+
+## Legacy / Experimental Material
+
+The following files are retained for historical reference and testing but are **not part of the primary workflow**:
+
+- `resiliency/models/rl_agent.py` — earlier single-step Q-learning experiment
+- `tests/test_rl_agent.py` — tests for that legacy experiment
+- `notebooks/eda_and_evaluation.ipynb` — original EDA and Q-learning exploration
+
+The current project path is:
+
+```text
+synthetic data -> XGBoost default-risk model -> customer context -> LinUCB treatment selection
+```

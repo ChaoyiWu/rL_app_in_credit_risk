@@ -44,7 +44,7 @@ OfferType action space used by QLearningAgent:
 Context
 -------
 The expected context vector is the 10-dimensional normalised state produced
-by :func:`resiliency.models.rl_agent.extract_rl_state`.  Pass
+by :func:`resiliency.models.context.extract_customer_context`.  Pass
 ``n_features=10`` (default) or set it to match any alternative featuriser.
 """
 from __future__ import annotations
@@ -163,16 +163,16 @@ class LinUCBAgent:
         Number of arms.  Defaults to 4 (the :class:`LinUCBArm` enum).
     n_features : int
         Dimension of the context vector.  Use 10 when feeding the output of
-        :func:`resiliency.models.rl_agent.extract_rl_state`.
+        :func:`resiliency.models.context.extract_customer_context`.
     alpha : float
         Exploration coefficient.  Higher values favour less-visited arms.
         Typical range: 0.1 – 2.0.
 
     Examples
     --------
-    >>> from resiliency.models.rl_agent import extract_rl_state
+    >>> from resiliency.models.context import extract_customer_context
     >>> agent = LinUCBAgent(n_features=10, alpha=1.0)
-    >>> ctx = extract_rl_state(customer_row)          # shape (10,)
+    >>> ctx = extract_customer_context(customer_row)          # shape (10,)
     >>> arm = agent.select_action(ctx)
     >>> agent.update(ctx, arm, reward=1.2)
     >>> scores = agent.get_arm_confidence(ctx)        # shape (4,)
@@ -280,7 +280,7 @@ class LinUCBAgent:
         ----------
         context : np.ndarray of shape (n_features,)
             Normalised customer context from
-            :func:`resiliency.models.rl_agent.extract_rl_state`.
+            :func:`resiliency.models.context.extract_customer_context`.
         default_prob : float
             Pre-computed default probability from the XGBoost classifier.
 

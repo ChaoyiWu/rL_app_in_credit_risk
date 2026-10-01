@@ -18,7 +18,7 @@ Pipeline
 --------
 1.  Load customer data from Parquet
 2.  Load (or train lightweight) XGBoost classifier → default_probs
-3.  Extract 10-dim context vectors via extract_rl_state()
+3.  Extract 10-dim customer context vectors
 4.  Simulate rule-based logging policy → historical (actions, rewards, propensities)
 5.  Train LinUCB online  (n_passes sequential sweeps through the data)
 6.  Compute IPS weights: LinUCB vs rule-based logging policy
@@ -48,39 +48,7 @@ from resiliency.evaluation.ips import effective_sample_size, importance_weights
 from resiliency.evaluation.ope import OPEEvaluator
 from resiliency.models.classifier import DefaultRiskClassifier
 from resiliency.models.linucb import ARM_LABELS, N_ARMS, LinUCBAgent, LinUCBArm
-from resiliency.models.rl_agent import OfferType, extract_rl_state
-
-
-# ---------------------------------------------------------------------------
-# LinUCB arm → OfferType mapping and per-arm cost overrides
-# ---------------------------------------------------------------------------
-
-_LINUCB_TO_OFFERTYPE: dict[int, OfferType] = {
-    LinUCBArm.PAYMENT_PLAN:     OfferType.PAYMENT_PLAN,
-    LinUCBArm.SETTLEMENT_30PCT: OfferType.SETTLEMENT_OFFER,
-    LinUCBArm.SETTLEMENT_50PCT: OfferType.SETTLEMENT_OFFER,
-    LinUCBArm.HARDSHIP_PROGRAM: OfferType.HARDSHIP_PROGRAM,
-}
-
-# Settlement cost overrides:
-#   SETTLEMENT_30PCT → debtor pays 30 ¢/$  (lender forgives 70 %) → cost 0.55
-#   SETTLEMENT_50PCT → debtor pays 50 ¢/$  (lender forgives 50 %) → cost 0.35
-_ARM_COST_OVERRIDE: dict[int, float] = {
-    LinUCBArm.SETTLEMENT_30PCT: 0.55,
-    LinUCBArm.SETTLEMENT_50PCT: 0.35,
-}
-
-_BASE_COST: dict[OfferType, float] = {
-    OfferType.PAYMENT_PLAN:     0.05,
-    OfferType.HARDSHIP_PROGRAM: 0.10,
-    OfferType.SETTLEMENT_OFFER: 0.35,
-}
-
-_BASE_SATISFACTION: dict[OfferType, float] = {
-    OfferType.PAYMENT_PLAN:     0.70,
-    OfferType.HARDSHIP_PROGRAM: 0.85,
-    OfferType.SETTLEMENT_OFFER: 0.65,
-}
+from resiliency.models.context import extract_customer_context
 
 
 # ---------------------------------------------------------------------------
@@ -115,26 +83,39 @@ def compute_bandit_reward(
     -------
     float
     """
-    arm   = LinUCBArm(linucb_action)
-    offer = _LINUCB_TO_OFFERTYPE[arm]
+    arm = LinUCBArm(linucb_action)
 
     p         = float(default_prob)
-    delinq    = float(customer.get("months_delinquent",        0))
+    delinq    = float(customer.get("months_delinquent", 0))
     requested = bool(customer.get("requested_hardship_program", False))
-    severity  = int(customer.get("hardship_severity",           1))
+    severity  = int(customer.get("hardship_severity", 1))
 
-    # Resolution probability per offer type
-    if offer is OfferType.PAYMENT_PLAN:
-        res = 0.55 + 0.20 * requested - 0.10 * (severity == 2)
-    elif offer is OfferType.HARDSHIP_PROGRAM:
-        res = 0.60 + 0.15 * requested + 0.05 * (delinq < 3)
-    else:  # SETTLEMENT_OFFER
-        res = 0.50 + 0.20 * (p > 0.70) - 0.10 * (severity < 1)
+    if arm is LinUCBArm.PAYMENT_PLAN:
+        res, cost, sat = (
+            0.55 + 0.20 * requested - 0.10 * (severity == 2),
+            0.05,
+            0.70,
+        )
+    elif arm is LinUCBArm.HARDSHIP_PROGRAM:
+        res, cost, sat = (
+            0.60 + 0.15 * requested + 0.05 * (delinq < 3),
+            0.10,
+            0.85,
+        )
+    elif arm is LinUCBArm.SETTLEMENT_30PCT:
+        res, cost, sat = (
+            0.50 + 0.20 * (p > 0.70) - 0.10 * (severity < 1),
+            0.55,
+            0.65,
+        )
+    else:  # SETTLEMENT_50PCT
+        res, cost, sat = (
+            0.50 + 0.20 * (p > 0.70) - 0.10 * (severity < 1),
+            0.35,
+            0.65,
+        )
+
     res = float(np.clip(res, 0.05, 0.95))
-
-    cost = _ARM_COST_OVERRIDE.get(linucb_action, _BASE_COST[offer])
-    sat  = _BASE_SATISFACTION[offer]
-
     return float(2.0 * res - 1.5 * cost + 0.5 * sat - 0.5 * (1 - res) * p)
 
 
@@ -377,7 +358,7 @@ def main() -> None:
     n = len(df)
     n_features = 10  # len(RL_STATE_FEATURES)
     contexts = np.stack(
-        [extract_rl_state(df.iloc[i]) for i in range(n)],
+        [extract_customer_context(df.iloc[i]) for i in range(n)],
         axis=0,
     ).astype(np.float64)   # (n, 10)
     logger.info("Context matrix shape: {}", contexts.shape)
