@@ -1,13 +1,12 @@
-"""Predictive models: XGBoost default classifier, RL agent, and LinUCB bandit."""
+"""Primary predictive and treatment-selection models."""
 from .classifier import DefaultRiskClassifier
-from .rl_agent import DebtResolutionEnv, QLearningAgent, OfferType
+from .context import CUSTOMER_CONTEXT_FEATURES, extract_customer_context
 from .linucb import LinUCBAgent, LinUCBArm
 
 __all__ = [
     "DefaultRiskClassifier",
-    "DebtResolutionEnv",
-    "QLearningAgent",
-    "OfferType",
+    "CUSTOMER_CONTEXT_FEATURES",
+    "extract_customer_context",
     "LinUCBAgent",
     "LinUCBArm",
 ]

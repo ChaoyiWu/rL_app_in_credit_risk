@@ -4,7 +4,7 @@ resiliency — Credit Risk Business Resiliency Intelligence library.
 Modules
 -------
 data        : Synthetic customer data generation
-models      : XGBoost default classifier and Q-learning RL agent
+models      : XGBoost default classifier and LinUCB contextual bandit
 evaluation  : Metrics, ROC curves, confusion matrices
 utils       : Preprocessing and feature engineering helpers
 """
