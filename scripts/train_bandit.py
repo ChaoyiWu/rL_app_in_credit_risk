@@ -388,14 +388,24 @@ def main() -> None:
     logger.info("=== Step 4: Simulating rule-based logging policy ===")
     log_actions     = np.empty(n, dtype=np.int64)
     log_rewards     = np.empty(n, dtype=np.float64)
-    log_propensity  = np.full(n, _RULE_P_CHOSEN)   # same for all (deterministic rule)
+    log_propensity  = np.empty(n, dtype=np.float64)
+    logging_rng     = np.random.default_rng(42)
 
     for i in range(n):
-        row  = df.iloc[i]
-        p    = float(default_probs[i])
-        act  = rule_based_action(row, p)
+        row       = df.iloc[i]
+        p         = float(default_probs[i])
+        preferred = rule_based_action(row, p)
+
+        # Simulate the stochastic logging policy described above:
+        # 85% probability on the rule-preferred action and the remaining
+        # probability spread evenly across the other actions.
+        action_probs = np.full(N_ARMS, _RULE_P_OTHER, dtype=np.float64)
+        action_probs[preferred] = _RULE_P_CHOSEN
+        act = int(logging_rng.choice(N_ARMS, p=action_probs))
+
         log_actions[i]    = act
         log_rewards[i]    = compute_bandit_reward(act, row, p)
+        log_propensity[i] = action_probs[act]
 
     logger.info(
         "Logging policy | mean_reward={:.4f} | action distribution: {}",
