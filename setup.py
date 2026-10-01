@@ -20,9 +20,8 @@ setup(
         "loguru>=0.7.0",
     ],
     extras_require={
-        "api": ["fastapi>=0.104.0", "uvicorn[standard]>=0.24.0", "pydantic>=2.4.0"],
         "rl": ["stable-baselines3>=2.1.0"],
-        "dev": ["pytest>=7.4.0", "pytest-cov>=4.1.0", "httpx>=0.25.0"],
+        "dev": ["pytest>=7.4.0", "pytest-cov>=4.1.0"],
     },
     classifiers=[
         "Programming Language :: Python :: 3",
