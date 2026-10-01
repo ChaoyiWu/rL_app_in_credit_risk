@@ -1,4 +1,4 @@
-"""
+"""LEGACY / EXPERIMENTAL MODULE.\n\nThis earlier Q-learning experiment is retained for reference and testing.\nIt is not used by the primary XGBoost -> LinUCB workflow.\n\n
 Reinforcement Learning agent for debt resolution offer recommendations.
 
 Architecture
@@ -289,7 +289,7 @@ if _GYM_AVAILABLE:
             }
             resolution_prob = float(np.clip(resolution_rates[offer], 0.05, 0.95))
 
-            # --- cost factors (lower cost = better for Capital One) --------
+            # --- cost factors (lower cost = better for the lender) --------
             cost_factors = {
                 OfferType.NO_ACTION: 0.0,
                 OfferType.PAYMENT_PLAN: 0.05,
