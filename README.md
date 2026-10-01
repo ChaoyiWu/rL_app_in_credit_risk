@@ -34,10 +34,6 @@ The main treatment-learning experiment uses a **LinUCB contextual bandit**.
 
 The contextual-bandit framing is intentionally simple because this prototype models a mostly **single-step treatment decision**. A full reinforcement-learning formulation would be more appropriate if the project modeled repeated customer states and treatment decisions over time.
 
-### 3. Application Layer
-
-A FastAPI layer demonstrates how model scoring and treatment recommendations could be exposed to another application.
-
 ## Simplified Architecture
 
 ```text
@@ -93,10 +89,6 @@ resiliency/
 └── utils/
     └── preprocessing.py
 
-api/
-├── main.py
-└── schemas.py
-
 scripts/
 ├── train.py                  # classifier + earlier RL experiment
 ├── train_bandit.py           # LinUCB experiment
@@ -127,12 +119,6 @@ python scripts/train.py --n-samples 10000 --n-rl-episodes 10000
 
 ```bash
 python scripts/train_bandit.py
-```
-
-### Start the API
-
-```bash
-uvicorn api.main:app --reload --port 8080
 ```
 
 ### Run tests
